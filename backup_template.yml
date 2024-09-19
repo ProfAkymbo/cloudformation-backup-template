@@ -1,0 +1,71 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AWS Backup daily CloudFormation configuration at 3pm
+Resources:
+  BackupPlan:
+    Type: AWS::Backup::BackupPlan
+    Properties:
+      BackupPlan:
+        BackupPlanName: akeemBackupPlan
+        BackupPlanRule:
+          - RuleName: daily-backups
+            TargetBackupVault: !Ref 'BackupVault'
+            ScheduleExpression: cron(0 15 ? * * *)
+            Lifecycle:
+              DeleteAfterDays: 91    #needs to be greater than coldStorage by 90days
+              MoveToColdStorageAfterDays: 1
+              #OptInToArchiveForSupportedResources: true         #if set to true, backup frequency must be monthly
+
+  BackupVault:
+    Type: AWS::Backup::BackupVault
+    Properties:
+      BackupVaultName: akeemBackupVault
+      EncryptionKeyArn: !GetAtt BackupVaultKey.Arn
+
+  BackupVaultKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: Encryption key for daily
+      Enabled: true
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:${AWS::Partition}:iam::${AWS::AccountId}:root'
+              #Service: backup.amazonaws.com
+            Action:
+              - kms:*
+            Resource: '*'
+
+  BackupVaultKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/akeemcmk/backup
+      TargetKeyId: !Ref 'BackupVaultKey'
+
+  BackupRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - backup.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSBackupServiceRolePolicyForBackup
+
+  BackupSelection:
+    Type: AWS::Backup::BackupSelection
+    Properties:
+      BackupSelection:
+        SelectionName: daily-backup-tag
+        IamRoleArn: !GetAtt 'BackupRole.Arn'
+        ListOfTags:
+          - ConditionType: STRINGEQUALS
+            ConditionKey: backup
+            ConditionValue: daily
+      BackupPlanId: !Ref 'BackupPlan'
