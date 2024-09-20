@@ -6,8 +6,8 @@ The provided CloudFormation template is well-structured and configures a daily b
 
 Creates a backup plan named "default" that defines the schedule and rules for backups.
 Includes a single backup rule named "daily-backups" that runs daily at 5:00 AM (cron(0 15 ? * * *)).
-Specifies a StartWindowMinutes of 60, allowing the backup to start within 60 minutes of the scheduled time.
-Sets a Lifecycle with DeleteAfterDays of 91, meaning backups are automatically deleted after 60 days.
+Specifies a StartWindowMinutes of 60, allowing the backup to start within 60 minutes of the scheduled time. moves backup to cold storage aws managed 
+Sets a Lifecycle with DeleteAfterDays of 91, meaning backups are automatically deleted after 91 days.
 
 ## 2. Backup Vault (BackupVault):
 
