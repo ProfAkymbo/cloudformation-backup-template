@@ -5,9 +5,9 @@ The provided CloudFormation template is well-structured and configures a daily b
 ## 1. Backup Plan (BackupPlan):
 
 Creates a backup plan named "default" that defines the schedule and rules for backups.
-Includes a single backup rule named "daily-backups" that runs daily at 5:00 AM (cron(0 5 ? * * *)).
+Includes a single backup rule named "daily-backups" that runs daily at 5:00 AM (cron(0 15 ? * * *)).
 Specifies a StartWindowMinutes of 60, allowing the backup to start within 60 minutes of the scheduled time.
-Sets a Lifecycle with DeleteAfterDays of 60, meaning backups are automatically deleted after 60 days.
+Sets a Lifecycle with DeleteAfterDays of 91, meaning backups are automatically deleted after 60 days.
 
 ## 2. Backup Vault (BackupVault):
 
